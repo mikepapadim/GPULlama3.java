@@ -92,8 +92,10 @@ public final class GGUF {
 
     public static Map<String, GGMLTensorEntry> loadTensors(FileChannel fileChannel, long tensorDataOffset, Map<String, GGUFTensorInfo> tensorInfos) throws IOException {
         Arena arena = Arena.ofAuto();
-        MemorySegment tensorData = arena.allocate(fileChannel.size(), 1);
-        fileChannel.read(tensorData.asByteBuffer(), (int) tensorDataOffset);
+//        MemorySegment tensorData = arena.allocate(fileChannel.size(), 1);
+//        fileChannel.read(tensorData.asByteBuffer(), (int) tensorDataOffset);
+        MemorySegment tensorData = fileChannel.map(FileChannel.MapMode.READ_ONLY, tensorDataOffset, fileChannel.size() - tensorDataOffset, arena);
+//        Map<String, GGMLTensorEntry> tensorEntries = HashMap.newHashMap(tensorInfos.size());
         //        Arena arena = Arena.ofAuto();
 //        long fileSize = fileChannel.size() - tensorDataOffset;
 //        long chunkSize = 1024 * 1024 * 1024; // 1GB per chunk

@@ -12,6 +12,7 @@ import com.example.tornadovm.TornadoVMLayerPlanner;
 import uk.ac.manchester.tornado.api.GridScheduler;
 import uk.ac.manchester.tornado.api.TornadoExecutionPlan;
 
+import java.lang.foreign.ValueLayout;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -126,18 +127,24 @@ public record Llama(Configuration configuration, Tokenizer tokenizer, Weights we
             });
 
             if (!TornadoVMCompute.TORNADOVM) {
+//            if (true) {
                 ffnLayerJava(l, state, dim, config, weights);
             } else {
+//                ffnLayerJava(l, state, dim, config, weights);
                 ffnLayerTornadoVM(state, tornadoVMListOfPlans.get(l));
             }
         }
 
 
         if(TornadoVMCompute.TORNADOVM) {
+//            state.wrapXFloat.getSegment().set(ValueLayout.ADDRESS,0, state.x.asMemorySegment());
             state.wrapXFloat.getSegment().copyFrom(state.x.asMemorySegment());
             tornadoVMListOfPlans.get(tornadoVMListOfPlans.size()-1).getFirst().withGridScheduler(tornadoVMListOfPlans.get(tornadoVMListOfPlans.size()-1).getSecond()).execute();
             state.logits.asMemorySegment().copyFrom(state.wrapLogits.getSegment());
             state.x.asMemorySegment().copyFrom(state.wrapXFloat.getSegment());
+//            state.logits.asMemorySegment().set(ValueLayout.ADDRESS,0, state.wrapLogits.getSegment());
+//            state.x.asMemorySegment().set(ValueLayout.ADDRESS,0, state.wrapXFloat.getSegment());
+
         } else {
             rmsnorm(state.x, state.x, weights.rms_final_weight, dim, config.rmsNormEps);
             weights.wcls.matmul(state.x, state.logits, config.vocabularySize, dim);
@@ -213,6 +220,10 @@ public record Llama(Configuration configuration, Tokenizer tokenizer, Weights we
      */
     public static List<Integer> generateTokens(Llama model, State state, int startPosition, List<Integer> promptTokens, Set<Integer> stopTokens, int maxTokens, Sampler sampler, boolean echo,
             IntConsumer onTokenGenerated) {
+
+        TornadoVMLayerPlanner tornadoVMLayerPlanner = new TornadoVMLayerPlanner(state, model);
+        ArrayList< Tuple2<TornadoExecutionPlan, GridScheduler>>  tornadoVMPlans = tornadoVMLayerPlanner.setupAndGetTornadoVMExecutionPlans();
+
         long startNanos = System.nanoTime();
         long startGen = 0;
         if (maxTokens < 0 || model.configuration().contextLength < maxTokens) {
@@ -224,8 +235,6 @@ public record Llama(Configuration configuration, Tokenizer tokenizer, Weights we
         int promptIndex = 0;
 
 
-        TornadoVMLayerPlanner tornadoVMLayerPlanner = new TornadoVMLayerPlanner(state, model);
-        ArrayList< Tuple2<TornadoExecutionPlan, GridScheduler>>  tornadoVMPlans = tornadoVMLayerPlanner.setupAndGetTornadoVMExecutionPlans();
 
         for (int position = startPosition; position < maxTokens; ++position) {
             forward(model, state, token, position,tornadoVMPlans);

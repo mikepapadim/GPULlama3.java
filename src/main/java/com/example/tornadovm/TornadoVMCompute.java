@@ -282,9 +282,9 @@ public class TornadoVMCompute {
     }
 
     public static void matrixVectorSimple(FloatArray x, FloatArray xout, FloatArray w, int n, int d) {
-        for (@Parallel int i = 0; i < x.getSize(); i++) {
+        for (@Parallel int i = 0; i <xout.getSize(); i++) {
             float val = 0f;
-            for (int j = 0; j < xout.getSize(); j++) {
+            for (int j = 0; j < x.getSize(); j++) {
                 val += w.get(i * n + j) * x.get(j);
             }
             xout.set(i, val);
