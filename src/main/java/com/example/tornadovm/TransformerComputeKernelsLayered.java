@@ -34,6 +34,28 @@ public class TransformerComputeKernelsLayered {
      */
     public static void reductionOneBlockWithLayer(KernelContext context, FloatArray output, FloatArray x, int size, float ermsNorm, int localMemSize) {
         int gid = context.globalIdx;
+
+        // Only the first thread does all the work
+        if (gid == 0) {
+            // Calculate sum of squares
+            float sumOfSquares = 0.0f;
+            for (int i = 0; i < size; i++) {
+                float val = x.get(i);
+                sumOfSquares += val * val;
+            }
+
+            // Calculate scale factor
+            sumOfSquares /= size;
+            sumOfSquares += ermsNorm;
+            float scale = 1.0f / TornadoMath.sqrt(sumOfSquares);
+
+            // Store the result
+            output.set(0, scale);
+        }
+    }
+
+    public static void reductionOneBlockWithLayerX(KernelContext context, FloatArray output, FloatArray x, int size, float ermsNorm, int localMemSize) {
+        int gid = context.globalIdx;
         int lid = context.localIdx;
         int groupId = context.groupIdx;
         int groupSize = context.localGroupSizeX;

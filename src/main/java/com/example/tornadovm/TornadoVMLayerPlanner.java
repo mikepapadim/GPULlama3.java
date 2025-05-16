@@ -337,9 +337,9 @@ public class TornadoVMLayerPlanner {
             tornadoForwardScheduler.addWorkerGrid("layer_" + i + ".matmul1", configDimRowMajorGlobalWorker);
             tornadoForwardScheduler.addWorkerGrid("layer_" + i + ".projectionTwo", configDimRowMajorGlobalWorker);
             tornadoForwardScheduler.addWorkerGrid("layer_" + i + ".fused_ffn_w1_w3", configHiddenDimRowMajorWorker);
-            tornadoForwardScheduler.addWorkerGrid("layer_" + i + ".reductionsOneBlock", rmsNormWorker);
+            tornadoForwardScheduler.addWorkerGrid("layer_" + i + ".reductionsOneBlock", singleWorker);
             tornadoForwardScheduler.addWorkerGrid("layer_" + i + ".mapContext", rmsNormWorker);
-            tornadoForwardScheduler.addWorkerGrid("layer_" + i + ".reductionsOneBlockFFN", rmsNormWorker);
+            tornadoForwardScheduler.addWorkerGrid("layer_" + i + ".reductionsOneBlockFFN", singleWorker);
             tornadoForwardScheduler.addWorkerGrid("layer_" + i + ".mapContextFFN", rmsNormWorker);
             tornadoForwardScheduler.addWorkerGrid("layer_" + i + ".parallel-attention", parallelAttentionWorker);
             tornadoForwardScheduler.addWorkerGrid("layer_" + i + ".copyToCaches", copyToCachesWorker);
@@ -353,7 +353,7 @@ public class TornadoVMLayerPlanner {
         vocabWorker.setLocalWork(16, 1, 1);
 
         tornadoForwardScheduler.addWorkerGrid("logits.projection", vocabWorker);
-        tornadoForwardScheduler.addWorkerGrid("logits.reductionsOneBlockLogits", rmsNormWorker);
+        tornadoForwardScheduler.addWorkerGrid("logits.reductionsOneBlockLogits", singleWorker);
         tornadoForwardScheduler.addWorkerGrid("logits.mapContextLogits", rmsNormWorker);
 
         return tornadoForwardScheduler;

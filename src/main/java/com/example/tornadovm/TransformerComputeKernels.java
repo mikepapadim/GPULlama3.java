@@ -34,7 +34,7 @@ public class TransformerComputeKernels {
      * @param ermsNorm Epsilon value for numerical stability (epsilon * epsilon)
      * @param localMemSize Size of local memory allocation (work group size)
      */
-    public static void reductionOneBlockWithLayer(KernelContext context, FloatArray output, FloatArray x, int size, float ermsNorm, int localMemSize) {
+    public static void reductionOneBlockWithLayerX(KernelContext context, FloatArray output, FloatArray x, int size, float ermsNorm, int localMemSize) {
         int gid = context.globalIdx;
         int lid = context.localIdx;
         int groupId = context.groupIdx;
@@ -77,6 +77,29 @@ public class TransformerComputeKernels {
             ss += ermsNorm;
             ss = 1.0f / TornadoMath.sqrt(ss);
             output.set(0, ss);  // Store the final scale factor
+        }
+    }
+
+
+    public static void reductionOneBlockWithLayer(KernelContext context, FloatArray output, FloatArray x, int size, float ermsNorm, int localMemSize) {
+        int gid = context.globalIdx;
+
+        // Only the first thread does all the work
+        if (gid == 0) {
+            // Calculate sum of squares
+            float sumOfSquares = 0.0f;
+            for (int i = 0; i < size; i++) {
+                float val = x.get(i);
+                sumOfSquares += val * val;
+            }
+
+            // Calculate scale factor
+            sumOfSquares /= size;
+            sumOfSquares += ermsNorm;
+            float scale = 1.0f / (float) Math.sqrt(sumOfSquares);
+
+            // Store the result
+            output.set(0, scale);
         }
     }
 
@@ -401,4 +424,69 @@ public class TransformerComputeKernels {
         return a * b + c;
     }
 
+
+    public static void serialRmsNorm(KernelContext context, FloatArray output, FloatArray x, int size, float epsilon) {
+        int gid = context.globalIdx;
+
+        // Only the first thread does all the work
+        if (gid == 0) {
+            // Calculate sum of squares
+            float sumOfSquares = 0.0f;
+            for (int i = 0; i < size; i++) {
+                float val = x.get(i);
+                sumOfSquares += val * val;
+            }
+
+            // Calculate scale factor
+            sumOfSquares /= size;
+            sumOfSquares += epsilon;
+            float scale = 1.0f / (float) Math.sqrt(sumOfSquares);
+
+            // Store the result
+            output.set(0, scale);
+        }
+    }
+
+    /**
+     * Unified serial RMS normalization that combines both steps:
+     * 1. Computes the scale factor
+     * 2. Applies normalization and weights in a single kernel
+     *
+     * This is a serial implementation where only the first thread performs all computations.
+     *
+     * @param context The kernel context
+     * @param output The output array to store normalized values
+     * @param input The input array to normalize
+     * @param weights The weight values to apply after normalization
+     * @param size The size of input/output arrays
+     * @param epsilon Small constant for numerical stability
+     */
+    public static void unifiedSerialRmsNorm(KernelContext context,
+            FloatArray output,
+            FloatArray input,
+            FloatArray weights,
+            int size,
+            float epsilon) {
+        int gid = context.globalIdx;
+
+        // Only the first thread does all the work
+        if (gid == 0) {
+            // Step 1: Calculate scale factor
+            float sumOfSquares = 0.0f;
+            for (int i = 0; i < size; i++) {
+                float val = input.get(i);
+                sumOfSquares += val * val;
+            }
+
+            sumOfSquares /= size;
+            sumOfSquares += epsilon;
+            float scale = 1.0f / (float) Math.sqrt(sumOfSquares);
+
+            // Step 2: Apply normalization and weights in one pass
+            for (int i = 0; i < size; i++) {
+                float normalized = scale * input.get(i);
+                output.set(i, weights.get(i) * normalized);
+            }
+        }
+    }
 }
