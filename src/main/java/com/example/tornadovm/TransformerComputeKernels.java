@@ -66,18 +66,18 @@ public class TransformerComputeKernels {
         }
 
         // Only the first thread in the first workgroup computes the final normalization factor
-        if (gid == 0) {
-            // Combine partial sums from all workgroups
-            float ss = 0.0f;
-            for (int i = 1; i <= (size / localMemSize); i++) {  // Assuming 8 workgroups
-                ss += output.get(i);
-            }
-
-            ss /= size;
-            ss += ermsNorm;
-            ss = 1.0f / TornadoMath.sqrt(ss);
-            output.set(0, ss);  // Store the final scale factor
-        }
+//        if (gid == 0) {
+//            // Combine partial sums from all workgroups
+//            float ss = 0.0f;
+//            for (int i = 1; i <= (size / localMemSize); i++) {  // Assuming 8 workgroups
+//                ss += output.get(i);
+//            }
+//
+//            ss /= size;
+//            ss += ermsNorm;
+//            ss = 1.0f / TornadoMath.sqrt(ss);
+//            output.set(0, ss);  // Store the final scale factor
+//        }
     }
 
     /**
