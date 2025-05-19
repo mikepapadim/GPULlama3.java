@@ -63,11 +63,30 @@ public class TransformerComputeKernelsLayered {
             output.set(groupId + 1, localX[0]);
         }
 
-        // Only the first thread in the first workgroup computes the final normalization factor
+//        // Only the first thread in the first workgroup computes the final normalization factor
+//        if (gid == 0) {
+//            // Combine partial sums from all workgroups
+//            float ss = 0.0f;
+//            for (int i = 1; i <= (size / localMemSize); i++) {  // Assuming 8 workgroups
+//                ss += output.get(i);
+//            }
+//
+//            ss /= size;
+//            ss += ermsNorm;
+//            ss = 1.0f / TornadoMath.sqrt(ss);
+//            output.set(0, ss);  // Store the final scale factor
+//        }
+    }
+
+    // Second kernel - Combines partial sums and computes final normalization
+    public static void reductionFinalNormalization(KernelContext context, FloatArray output, int size, float ermsNorm) {
+        int gid = context.globalIdx;
+
+        // Only one thread needs to perform this calculation
         if (gid == 0) {
             // Combine partial sums from all workgroups
             float ss = 0.0f;
-            for (int i = 1; i <= (size / localMemSize); i++) {  // Assuming 8 workgroups
+            for (int i = 1; i < output.getSize(); i++) {  // Fixed bounds to avoid out of bounds
                 ss += output.get(i);
             }
 

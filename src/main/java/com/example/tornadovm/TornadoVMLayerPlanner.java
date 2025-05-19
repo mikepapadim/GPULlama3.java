@@ -101,6 +101,8 @@ public class TornadoVMLayerPlanner {
             unifiedLayer = configureLayerDataTransfers(unifiedLayer, layerIndex);
             unifiedLayer.task("reductionsOneBlock" , TransformerComputeKernelsLayered::reductionOneBlockWithLayer, context, state.temp,
                         state.wrapX, config.dim, config.rmsNormEps, state.localSize)
+                .task("reductionFinalNormalization" , TransformerComputeKernelsLayered::reductionFinalNormalization, context, state.temp,
+                         config.dim, config.rmsNormEps)
                 .task("mapContext", TransformerComputeKernelsLayered::reductionOneBlock2WithLayer, context, state.wrapXb,
                         state.wrapX, weights.rms_att_weightLayered[layerIndex], state.temp)
                 .task("qmatmul", TransformerComputeKernelsLayered::matrixVectorGeneric, context,
@@ -122,6 +124,8 @@ public class TornadoVMLayerPlanner {
                         state.wrapXb,  state.wrapX, weights.woLayered[layerIndex], config.dim, config.dim,  LOCAL_WORK_GROUP_SIZE_ALLOC)
                 .task("reductionsOneBlockFFN", TransformerComputeKernelsLayered::reductionOneBlockWithLayer, context, state.tempFFN,
                         state.wrapX, config.dim, config.rmsNormEps, state.localSize)
+                .task("reductionFinalNormalizationFFN" , TransformerComputeKernelsLayered::reductionFinalNormalization, context, state.tempFFN,
+                        config.dim, config.rmsNormEps)
                 .task("mapContextFFN", TransformerComputeKernelsLayered::reductionOneBlock2WithLayer, context, state.wrapXb,
                         state.wrapX, weights.rms_ffn_weightLayered[layerIndex], state.tempFFN)
                 .task("fused_ffn_w1_w3", TransformerComputeKernelsLayered::fusedFeedForwardWithSiLUAndGLUActivation, context,
@@ -151,6 +155,8 @@ public class TornadoVMLayerPlanner {
                 )
                 .task("reductionsOneBlockLogits", TransformerComputeKernels::reductionOneBlockWithLayer, context, state.tempLogits,
                         state.wrapX, config.dim, config.rmsNormEps, state.localSize)
+                .task("reductionFinalNormalizationLogits" , TransformerComputeKernelsLayered::reductionFinalNormalization, context, state.tempLogits,
+                        config.dim, config.rmsNormEps)
                 .task("mapContextLogits", TransformerComputeKernels::reductionOneBlock2WithLogits, context, state.wrapX,
                         weights.rms_final_weight_as_floatArray, state.tempLogits);
                 logits = configureQuantizedMatrixVectorFinalWeight(logits);
