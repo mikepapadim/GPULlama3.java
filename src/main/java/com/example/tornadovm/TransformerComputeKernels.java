@@ -96,7 +96,7 @@ public class TransformerComputeKernels {
             // Calculate scale factor
             sumOfSquares /= size;
             sumOfSquares += ermsNorm;
-            float scale = 1.0f / (float) Math.sqrt(sumOfSquares);
+            float scale = 1.0f /  TornadoMath.sqrt(sumOfSquares);
 
             // Store the result
             output.set(0, scale);
