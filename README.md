@@ -66,6 +66,7 @@ This table shows inference performance across different hardware and quantizatio
 
 ### 🚧 Work-in-progress Features
 <details>
+  
 - [ ] **Additional architectures and model format**
   - [ ] Mistral/Mixtral models
   - [ ] Gemma/Gemma2 models
