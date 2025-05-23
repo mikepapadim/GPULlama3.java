@@ -3,7 +3,7 @@
 ![TornadoVM](https://img.shields.io/badge/TornadoVM-enabled-green?style=for-the-badge&logo=apache)
 ![OpenCL](https://img.shields.io/badge/OpenCL-supported-blue?style=for-the-badge&logo=khronos)
 ![CUDA](https://img.shields.io/badge/CUDA/PTX-supported-76B900?style=for-the-badge&logo=nvidia)
-
+[![GPULlama3.java DeepWiki](https://img.shields.io/badge/GPULlama3.java-DeepWiki-blue)](https://deepwiki.com/mikepapadim/GPULlama3.java)
 
 [//]: # (![Last Commit]&#40;https://img.shields.io/github/last-commit/beehive-lab/GPULlama3.java?style=for-the-badge&#41;)
 
