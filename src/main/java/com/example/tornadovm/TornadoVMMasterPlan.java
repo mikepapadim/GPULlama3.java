@@ -67,7 +67,7 @@ public class TornadoVMMasterPlan {
         // Record time after warmup
         if (ENABLE_TORNADOVM_INIT_TIME) {
             warmupTime = System.nanoTime();
-            System.err.printf("JIT warmup completed: %.2f ms\n", (warmupTime - planCreationTime) / 1_000_000.0);
+            System.err.printf("Java to GPU JIT compiler warmup: %.2f ms\n", (warmupTime - planCreationTime) / 1_000_000.0);
         }
 
         // 3. Perform copy-in of read-only weights and objects
@@ -76,8 +76,8 @@ public class TornadoVMMasterPlan {
         // Record final timing information
         if (ENABLE_TORNADOVM_INIT_TIME) {
             long copyTime = System.nanoTime();
-            System.err.printf("Read-only weight transfer to GPU: %.2f ms\n", (copyTime - warmupTime) / 1_000_000.0);
-            System.err.printf("Total TornadoVM initialization: %.2f ms\n\n", (copyTime - startTime) / 1_000_000.0);
+            System.err.printf("Transfer read-only weights to GPU: %.2f ms\n", (copyTime - warmupTime) / 1_000_000.0);
+            System.err.printf("Finished TornadoVM initialization...\n \n");
         }
 
         return tornadoVMPlan;

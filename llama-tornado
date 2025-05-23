@@ -73,6 +73,9 @@ class LlamaRunner:
         if args.use_gpu:
             cmd.append("-Duse.tornadovm=true")
 
+        if args.verbose_init:
+            cmd.append("-Dllama.EnableTimingForTornadoVMInit=true")
+
         # Debug options
         debug_config = []
 
@@ -289,6 +292,9 @@ def create_parser() -> argparse.ArgumentParser:
                              help="Print kernel information (tornado.printKernel=true)")
     verbose_group.add_argument("--full-dump", dest="full_dump", action="store_true",
                              help="Enable full debug dump (tornado.fullDebug=true)")
+    verbose_group.add_argument("--verbose-init", dest="verbose_init", action="store_true",
+                             help="Enable timers for TornadoVM initialization (llama.EnableTimingForTornadoVMInit=true)")
+
 
     # Command display options
     command_group = parser.add_argument_group("Command Display Options")
